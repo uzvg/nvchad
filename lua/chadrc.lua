@@ -14,8 +14,26 @@ M.base46 = {
   },
 }
 
+-- 仅在连接到 OpenCode 服务时显示图标和地址；pcall 避免插件尚未加载时报错
+local function opencode_status()
+  local ok, status = pcall(function()
+    if not require("opencode.server").connected then
+      return ""
+    end
+    return require("opencode").statusline()
+  end)
+
+  return ok and status ~= "" and ("%#St_Lsp# " .. status .. " ") or ""
+end
+
 M.ui = {
-  statusline = { separator_style = "round" },
+  statusline = {
+    separator_style = "round",
+    order = { "mode", "file", "git", "%=", "lsp_msg", "%=", "diagnostics", "lsp", "opencode", "cwd", "cursor" },
+    modules = {
+      opencode = opencode_status,
+    },
+  },
 }
 
 return M
