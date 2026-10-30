@@ -1,19 +1,15 @@
 require("nvchad.configs.lspconfig").defaults()
--- 🔗 https://nvchad.com/docs/recipes
-local servers = {
-  html = {},
-  cssls = {},
-  lua_ls = {},
-  pyright = {},
-  markdown_oxide = {},
-  bashls = {
-    filetypes = { "bash", "sh", "zsh" },
-  },
+
+-- bashls 默认不包含 zsh
+vim.lsp.config("bashls", { filetypes = { "bash", "sh", "zsh" } })
+
+-- 其余服务器直接使用 nvim-lspconfig 的默认配置
+-- 文档：:h vim.lsp.config
+vim.lsp.enable {
+  "bashls",
+  "cssls",
+  "html",
+  "lua_ls",
+  "markdown_oxide",
+  "pyright",
 }
-
-for name, opts in pairs(servers) do
-  vim.lsp.config(name, opts)
-  vim.lsp.enable(name)
-end
-
--- read :h vim.lsp.config for changing options of lsp servers
