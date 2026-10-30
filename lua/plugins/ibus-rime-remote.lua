@@ -7,6 +7,7 @@ return {
     "uzvg/ibus-rime-remote.nvim",
     -- 需要在 InsertLeave / InsertEnter 上立即生效，不能懒加载
     lazy = false,
+    enabled = false,
     -- 默认配置即可；需要自定义时：
     -- opts = { bin = "/home/uzvg/.local/bin/ibus-rime-remote", ignore_macro = true },
     opts = {},
