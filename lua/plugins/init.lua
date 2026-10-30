@@ -1,28 +1,11 @@
+-- 用户自定义插件入口（索引）
+-- 说明：根目录 init.lua 里的 `{ import = "plugins" }` 会自动加载本目录下的所有 .lua 文件，
+-- 这里再显式 import 是为了让各插件的加载顺序和归属一目了然
 return {
-  {
-    "stevearc/conform.nvim",
-    -- event = 'BufWritePre', -- uncomment for format on save
-    opts = require "configs.conform",
-  },
-
-  -- These are some examples, uncomment them if you want to see them work!
-  {
-    "neovim/nvim-lspconfig",
-    config = function()
-      require "configs.lspconfig"
-    end,
-  },
-
-  -- test new blink
-  -- { import = "nvchad.blink.lazyspec" },
-
-  -- {
-  -- 	"nvim-treesitter/nvim-treesitter",
-  -- 	opts = {
-  -- 		ensure_installed = {
-  -- 			"vim", "lua", "vimdoc",
-  --      "html", "css"
-  -- 		},
-  -- 	},
-  -- },
+  { import = "plugins.conform" },
+  { import = "plugins.lspconfig" },
+  { import = "plugins.blink" },
+  { import = "plugins.treesitter" },
+  { import = "plugins.lazygit" },
+  { import = "plugins.ibus-rime-remote" },
 }
