@@ -2,6 +2,13 @@ require "nvchad.mappings"
 
 local map = vim.keymap.set
 
+-- NvChad 默认只把 <C-h/j/k/l> 映射在 n / i 模式；终端模式（t）下这些键会被直接
+-- 发送给终端程序，所以切窗口失效。这里先用 <C-\><C-n> 退出终端输入模式，
+-- 再执行 <C-w>h/j/k/l 切窗口。
+for key, dir in pairs { ["<C-h>"] = "h", ["<C-j>"] = "j", ["<C-k>"] = "k", ["<C-l>"] = "l" } do
+  map("t", key, "<C-\\><C-n><C-w>" .. dir, { desc = "Switch window " .. dir })
+end
+
 map("n", ";", ":", { desc = "Enter command mode" })
 map("i", "jk", "<Esc>", { desc = "Exit insert mode" })
 map("n", "<leader>q", "<cmd>confirm qa<cr>", { desc = "Quit Neovim" })
