@@ -6,6 +6,26 @@ map("n", ";", ":", { desc = "Enter command mode" })
 map("i", "jk", "<Esc>", { desc = "Exit insert mode" })
 map("n", "<leader>q", "<cmd>confirm qa<cr>", { desc = "Quit Neovim" })
 
+-- OpenCode
+-- 打开提示输入框；选区或 [count] 会作为 @this 上下文发送
+map({ "n", "x" }, "<C-a>", function()
+  require("opencode").ask "@this: "
+end, { desc = "Ask OpenCode…" })
+-- 从内置提示词和 OpenCode 已注册命令中选择
+map({ "n", "x" }, "<C-x>", function()
+  require("opencode").select()
+end, { desc = "Select OpenCode…" })
+-- 把当前范围交给 OpenCode；goo 只发当前行
+map({ "n", "x" }, "go", function()
+  return require("opencode").operator "@this"
+end, { desc = "Send range to OpenCode", expr = true })
+map("n", "goo", function()
+  return require("opencode").operator "@this" .. "_"
+end, { desc = "Send line to OpenCode", expr = true })
+-- 显示 / 隐藏 OpenCode 终端（终端模式下用 <C-.>，普通模式两种都可以）
+map({ "n", "t" }, "<C-.>", require("configs.opencode").toggle, { desc = "Toggle OpenCode terminal" })
+map("n", "<leader>oo", require("configs.opencode").toggle, { desc = "Toggle OpenCode terminal" })
+
 -- 剪贴板：NvChad 已设置 clipboard=unnamedplus，y/d/p 默认就会使用系统剪贴板。
 -- 这里只把 x/X/s/c 这类“改字符”送进黑洞寄存器，避免覆盖剪贴板。
 -- C/S 是独立命令，不会经过 c 的映射，因此需要单独处理。
