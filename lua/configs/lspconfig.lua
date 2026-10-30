@@ -7,9 +7,10 @@ vim.lsp.config("bashls", { filetypes = { "bash", "sh", "zsh" } })
 -- 文档：:h vim.lsp.config
 vim.lsp.enable {
   "bashls",
+  "basedpyright",
   "cssls",
   "html",
   "lua_ls",
   "markdown_oxide",
-  "pyright",
+  "ruff",
 }
