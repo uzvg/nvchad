@@ -1,50 +1,63 @@
 require "nvchad.mappings"
+
 local map = vim.keymap.set
 
-map("n", ";", ":", { desc = "CMD enter command mode" })
-map("i", "jk", "<ESC>")
-map("n", "Q", ":exit<CR>", { desc = "Exit neovim" })
-map("n", "<leader>q", ":exit<CR>", { desc = "Exit neovim" })
--- map("n", "S", ":w<CR>", { desc = "Save Changes" })
+map("n", ";", ":", { desc = "Enter command mode" })
+map("i", "jk", "<Esc>", { desc = "Exit insert mode" })
+map("n", "<leader>q", "<cmd>confirm qa<cr>", { desc = "Quit Neovim" })
 
--- 只有 y 和 d 允许触碰系统剪贴板
-map({ "n", "v" }, "y", '"+y')
-map("n", "yy", '"+yy')
-map("n", "Y", '"+Y')
+-- 剪贴板：NvChad 已设置 clipboard=unnamedplus，y/d/p 默认就会使用系统剪贴板。
+-- 这里只把 x/X/s/c 这类“改字符”送进黑洞寄存器，避免覆盖剪贴板。
+-- C/S 是独立命令，不会经过 c 的映射，因此需要单独处理。
+map({ "n", "x" }, "x", '"_x', { desc = "Delete char without yanking" })
+map({ "n", "x" }, "s", '"_s', { desc = "Substitute without yanking" })
+map({ "n", "x" }, "c", '"_c', { desc = "Change without yanking" })
+map("n", "X", '"_X', { desc = "Delete char before without yanking" })
+map("n", "C", '"_C', { desc = "Change to end without yanking" })
+map("n", "S", '"_S', { desc = "Change line without yanking" })
 
-map({ "n", "v" }, "d", '"+d')
-map("n", "dd", '"+dd')
-map("n", "D", '"+D')
+-- 可视模式用 P 覆盖选区：v_P 不会把被替换的内容写进无名寄存器（也就是剪贴板）
+map("x", "p", '"+P', { desc = "Paste over selection without yanking" })
 
--- x, s, c, C 统统送进黑洞寄存器
-map({ "n", "v" }, "x", '"_x')
-map({ "n", "v" }, "s", '"_s')
-map({ "n", "v" }, "c", '"_c')
-map("n", "C", '"_C')
-map("n", "S", '"_S')
+-- j/k 按显示行移动；带 count 时按实际行移动
+map({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true, desc = "Move down" })
+map({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true, desc = "Move up" })
 
--- 普通模式直接粘，可视模式替换但不覆盖剪贴板
-map("n", "p", '"+p')
-map("n", "P", '"+P')
-map("v", "p", '"+P') -- 关键：可视模式用大写 P 的行为实现小写 p 的功能
+-- 运行当前文件 / 当前行 / 选中代码（Lua）
+map("n", "<leader>rc", "<cmd>source %<cr>", { desc = "Source current file" })
+map("n", "<leader>rl", "<cmd>.lua<cr>", { desc = "Run current line as Lua" })
+map("x", "<leader>rs", ":lua<cr>", { desc = "Run selection as Lua" })
 
--- 如果 count 为 0 执行 gj/gk，否则执行 j/k
-map({ "n", "x", "v" }, "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true, desc = "Move cursor down" })
-map({ "n", "x", "v" }, "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true, desc = "Move cursor up" })
+-- 在下方 / 上方新建一行注释并进入插入模式
+local function comment_line(above)
+  local before, after = vim.bo.commentstring:match "^(.-)%%s(.*)$"
+  if not before then
+    return
+  end
 
--- Execute lua code
-map("n", "<space>rc", "<cmd>source %<cr>", { desc = "Source current file" })
-map("n", "<space>rl", ":.lua<cr>", { desc = "Execute current line" })
-map("v", "<space>rs", ":lua<cr>", { desc = "Execute selection" })
+  local row = vim.api.nvim_win_get_cursor(0)[1]
+  local indent = vim.fn.getline(row):match "^%s*" or ""
+  local insert_at = above and row - 1 or row
 
--- commenting
-map("n", "gco", "o<esc>Vcx<esc><cmd>normal gcc<cr>fxa<bs>", { desc = "Add Comment Below" })
-map("n", "gcO", "O<esc>Vcx<esc><cmd>normal gcc<cr>fxa<bs>", { desc = "Add Comment Above" })
+  vim.api.nvim_buf_set_lines(0, insert_at, insert_at, false, { indent .. before .. after })
+  vim.api.nvim_win_set_cursor(0, { insert_at + 1, #indent + #before })
+  vim.cmd "startinsert"
+end
 
--- editing neovim config
+map("n", "gco", function()
+  comment_line(false)
+end, { desc = "Add comment below" })
+
+map("n", "gcO", function()
+  comment_line(true)
+end, { desc = "Add comment above" })
+
+-- 打开 Neovim 配置目录
 map("n", "<leader>nc", function()
-  local config_path = vim.fn.stdpath "config"
-  local nvim_tree_api = require "nvim-tree.api"
-  nvim_tree_api.tree.open { path = config_path, find_file = true }
-  print("Navigate to nvim config dir: " .. config_path)
-end, { desc = "Edit Neovim Config (NvimTree)" })
+  local ok, api = pcall(require, "nvim-tree.api")
+  if not ok then
+    vim.notify("nvim-tree is not available", vim.log.levels.WARN)
+    return
+  end
+  api.tree.open { path = vim.fn.stdpath "config", find_file = true }
+end, { desc = "Open Neovim config directory" })
