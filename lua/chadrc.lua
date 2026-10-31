@@ -26,6 +26,11 @@ local function opencode_status()
   return ok and status ~= "" and ("%#St_Lsp# " .. status .. " ") or ""
 end
 
+-- 启动时（打开空 buffer）自动显示 Nvdash 首页
+M.nvdash = {
+  load_on_startup = true,
+}
+
 M.ui = {
   statusline = {
     separator_style = "round",
